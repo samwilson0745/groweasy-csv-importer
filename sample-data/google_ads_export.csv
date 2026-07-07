@@ -1,0 +1,5 @@
+Timestamp,Name,Email Address,Phone,Location,Campaign,Notes
+06/01/2026 16:20,Rahul Verma,rahul.verma@example.com,9876501234,Mumbai,leads_on_demand,"Interested, wants site visit next weekend"
+06/01/2026 17:05,Priya Deshmukh,priya.deshmukh@example.com,9876502345,Pune,leads_on_demand,"Called twice, did not pick up"
+06/02/2026 09:12,Arjun Reddy,arjun.reddy@example.com,9876503456,Hyderabad,leads_on_demand,"Not interested, budget mismatch"
+06/02/2026 12:40,Kavya Menon,kavya.menon@example.com;kavya.alt@example.com,9876504567,Kochi,leads_on_demand,"Deal closed - booked 2BHK, onboarding started"
