@@ -1,0 +1,60 @@
+services:
+  - type: web
+    name: groweasy-csv-importer-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/import/health
+    autoDeploy: true
+    envVars:
+      # Render injects PORT automatically - the app already reads
+      # process.env.PORT, so nothing to set here.
+      - key: NODE_ENV
+        value: production
+
+      # Set this to your deployed frontend's URL once it exists (e.g. the
+      # Vercel deployment) so CORS allows it. Comma-separate multiple
+      # origins. Defaults to "*" so the very first deploy doesn't fail
+      # closed - tighten it after your frontend is live.
+      - key: FRONTEND_ORIGIN
+        value: "*"
+
+      # AI provider selection - "gemini" | "anthropic" | "openai"
+      - key: AI_PROVIDER
+        value: gemini
+
+      # Secrets: not set here on purpose. Add the real value for whichever
+      # provider you use in the Render dashboard (Environment tab) - never
+      # commit API keys to the repo.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-4-5
+      - key: ANTHROPIC_MAX_TOKENS
+        value: "8192"
+
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+
+      # Batch processing / reliability tuning - same defaults as
+      # backend/.env.example, safe to leave as-is.
+      - key: AI_BATCH_SIZE
+        value: "25"
+      - key: AI_MAX_RETRIES
+        value: "3"
+      - key: AI_MAX_CONCURRENT_BATCHES
+        value: "5"
+      - key: AI_TIMEOUT_MS
+        value: "45000"
+      - key: IMPORT_ROUTE_TIMEOUT_MS
+        value: "150000"

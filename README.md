@@ -226,9 +226,38 @@ exercise the AI mapping:
 
 ## Deployment
 
-- **Backend**: Render, Railway, or Fly.io all work well for an Express app -
-  set the `.env.example` variables in the platform's dashboard and point the
-  start command at `npm run build && npm start`.
-- **Frontend**: Vercel is the natural fit for Next.js - set
-  `NEXT_PUBLIC_API_URL` to the deployed backend's URL as an environment
-  variable.
+### Backend: Render
+
+A [`render.yaml`](./render.yaml) Blueprint is included at the project root, so
+the backend can be deployed without manually clicking through service
+settings:
+
+1. Push this repo to GitHub.
+2. In the Render dashboard: **New +** -> **Blueprint** -> select the repo.
+   Render reads `render.yaml` and creates a web service rooted at `backend/`
+   with the build command `npm install && npm run build` and start command
+   `npm start`.
+3. Before the first deploy finishes, open the service's **Environment** tab
+   and set the API key for whichever provider you're using (only one is
+   required) - `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, or `OPENAI_API_KEY`.
+   These are intentionally left blank in `render.yaml` (`sync: false`) so no
+   secret ever gets committed to the repo.
+4. Once your frontend is deployed too, come back and set `FRONTEND_ORIGIN`
+   to its exact URL (it defaults to `*` so the first deploy doesn't fail
+   closed, but should be locked down afterward).
+5. Render assigns the service a URL like
+   `https://groweasy-csv-importer-backend.onrender.com` - use that as
+   `NEXT_PUBLIC_API_URL` for the frontend. `/api/import/health` is wired up
+   as the health check endpoint.
+
+Don't want to use the Blueprint? The same settings work if you create the
+web service manually: root directory `backend`, build command
+`npm install && npm run build`, start command `npm start`, and the env vars
+listed in `backend/.env.example`.
+
+Railway or Fly.io work too, with the same build/start commands.
+
+### Frontend: Vercel
+
+Vercel is the natural fit for Next.js - set `NEXT_PUBLIC_API_URL` to the
+deployed backend's URL as an environment variable.
