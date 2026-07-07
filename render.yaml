@@ -10,7 +10,7 @@ services:
     # version within a semver range. That drift is exactly what caused the
     # TypeScript version mismatch (and resulting build errors) between local
     # verification and Render's build.
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci && node -v && npx tsc -v && npm run build
     startCommand: npm start
     healthCheckPath: /api/import/health
     autoDeploy: true
