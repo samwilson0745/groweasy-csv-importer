@@ -5,7 +5,12 @@ services:
     rootDir: backend
     plan: free
     region: oregon
-    buildCommand: npm install && npm run build
+    # npm ci (not npm install) - installs exactly what's pinned in
+    # package-lock.json instead of letting npm silently pick a newer
+    # version within a semver range. That drift is exactly what caused the
+    # TypeScript version mismatch (and resulting build errors) between local
+    # verification and Render's build.
+    buildCommand: npm ci && npm run build
     startCommand: npm start
     healthCheckPath: /api/import/health
     autoDeploy: true
