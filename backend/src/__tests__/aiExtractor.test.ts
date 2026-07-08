@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { extractCrmRecords } from "../services/aiExtractor";
+import { AiClientError } from "../services/aiClient";
 import { RawRow } from "../types/crm";
 
 function fakeAi(resultsByBatch: Record<string, unknown>[]) {
@@ -126,6 +127,40 @@ test("extractCrmRecords marks a batch as skipped (with reason) after AI failures
   assert.equal(result.totalImported, 0);
   assert.equal(result.totalSkipped, 2);
   assert.equal(result.skipped[0].reason, "simulated network failure");
+});
+
+test("extractCrmRecords stops after one attempt for a non-retryable error instead of burning all retries", async () => {
+    const rows: RawRow[] = [{ name: "A" }, { name: "B" }];
+    let calls = 0;
+    const failsPermanently = async () => {
+          calls += 1;
+          throw new AiClientError("GEMINI_API_KEY is not set.", { retryable: false });
+    };
+  
+    const result = await extractCrmRecords(rows, failsPermanently);
+  
+    assert.equal(calls, 1, "should not retry a non-retryable error");
+    assert.equal(result.totalSkipped, 2);
+    assert.equal(result.skipped[0].reason, "GEMINI_API_KEY is not set.");
+});
+
+test("extractCrmRecords retries a retryable error (e.g. provider overload) the full configured number of times", async () => {
+    const rows: RawRow[] = [{ name: "A", email: "a@example.com" }];
+    let calls = 0;
+    const alwaysOverloaded = async () => {
+          calls += 1;
+          throw new AiClientError("Gemini request failed (503): model overloaded", {
+                  status: 503,
+                  retryable: true,
+          });
+    };
+  
+    const result = await extractCrmRecords(rows, alwaysOverloaded);
+  
+    // AI_MAX_RETRIES defaults to 3 - a retryable error should use every attempt.
+    assert.equal(calls, 3);
+    assert.equal(result.totalSkipped, 1);
+    assert.match(result.skipped[0].reason, /model overloaded/);
 });
 
 test("extractCrmRecords rejects an invalid created_at rather than passing it through", async () => {
